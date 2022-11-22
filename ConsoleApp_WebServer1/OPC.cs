@@ -13,15 +13,19 @@ using System.Xml.Linq;
 
 namespace ConsoleApp_WebServer1
 {
+    // OPC – это набор повсеместно принятых спецификаций, 
+    // предоставляющих универсальный механизм обмена данными в системах контроля и управления.
+    // Аббревиатура OPC традиционно расшифровывается как OLE for Process Control.
+    // OLE – Object Linking and Embedding (связывание и встраивание объектов).  
     class OPC
     {
-        public bool IsConnected = false;
+        public bool IsConnected = false; // подключен
         public String Out = "";
 
         // Запрос списка тегов
         public OPC(String OPCName, Boolean Info = true, String Group="")
         {
-            Uri url = UrlBuilder.Build(OPCName); // "Kepware.KEPServerEX.V6"
+            Uri url = UrlBuilder.Build(OPCName); // например: "Kepware.KEPServerEX.V6"
             using (var server = new OpcDaServer(url))
             {
                 // Подключение к серверу
@@ -29,18 +33,16 @@ namespace ConsoleApp_WebServer1
                 Console.WriteLine("Server connected = " + server.IsConnected);
                 IsConnected = server.IsConnected;
 
-                Out = "";
-                // Браузер для просмотра всех тегов
-                var browser = new OpcDaBrowserAuto(server);
-                Out = SimpleBrowseChildren(browser, Group); // только выбранную группу
+                var browser = new OpcDaBrowserAuto(server); // Браузер для просмотра всех тегов
+                Out = SimpleBrowseChildren(browser, Group); // только выбранной группы
             }
         }
 
-        // Запрос значений
-        public OPC(String OPCName, String VarVal="")
+        // Запрос значений тегов
+        public OPC(String OPCName, String VarAddress = "")
         {
 
-            Uri url = UrlBuilder.Build(OPCName); // "Kepware.KEPServerEX.V6"
+            Uri url = UrlBuilder.Build(OPCName); // например: "Kepware.KEPServerEX.V6"
             using (var server = new OpcDaServer(url))
             {
                 // Подключение к серверу
@@ -52,21 +54,24 @@ namespace ConsoleApp_WebServer1
                 OpcDaGroup group = server.AddGroup("MG");
                 group.IsActive = true;
 
-                var definition1 = new OpcDaItemDefinition
+                var definition1 = new OpcDaItemDefinition // переменная 1
                 {
                     ItemId = "Simulation Examples.Functions.Ramp1",
                     IsActive = true
                 };
-                if (VarVal != "")
+
+                // заменяем адрес тега для переменной 1
+                if (!String.IsNullOrEmpty(VarAddress))
                 {
-                    definition1.ItemId = VarVal;
+                    definition1.ItemId = VarAddress;
                 }
-                var definition2 = new OpcDaItemDefinition
+
+                var definition2 = new OpcDaItemDefinition // переменная 2
                 {
                     ItemId = "Simulation Examples.Functions.Sine1",
                     IsActive = true
                 };
-                var definition3 = new OpcDaItemDefinition
+                var definition3 = new OpcDaItemDefinition // переменная 3
                 {
                     ItemId = "Simulation Examples.Functions.Random1",
                     IsActive = true
@@ -86,19 +91,23 @@ namespace ConsoleApp_WebServer1
                     }
                     else
                     {
+                        // не выводим, а могли бы:
                         //Console.WriteLine("> " + result.Item.ItemId.ToString());
                     }
                 }
 
+                // А данные нам нужны в формате
                 // XML
                 XDocument xdoc = new XDocument();
 
                 // создаем корневой элемент
                 XElement Tags = new XElement("Tags");
 
-                // Чтение всех элементов группы
                 Console.WriteLine();
+
+                // Чтение всех элементов группы
                 OpcDaItemValue[] values = group.Read(group.Items, OpcDaDataSource.Device);
+
                 foreach (OpcDaItemValue element in values)
                 {
                     Console.WriteLine(element.Item.ItemId.ToString() + " = " + element.Value.ToString());
