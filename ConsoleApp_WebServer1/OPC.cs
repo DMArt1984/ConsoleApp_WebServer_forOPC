@@ -111,7 +111,7 @@ namespace ConsoleApp_WebServer1
                     XAttribute TagName = new XAttribute("name", element.Item.ItemId.ToString());
                     XElement TagValue = new XElement("value", element.Value.ToString());
 
-                    // добавляем атрибут и элементы в элемент
+                    // добавляем атрибут и значение в элемент
                     Tag.Add(TagName);
                     Tag.Add(TagValue);
 

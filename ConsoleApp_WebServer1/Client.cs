@@ -77,37 +77,28 @@ namespace ConsoleApp_WebServer1
 
 
             // Переменные для заголовка и другие
-            string Title = "";
+            string Document = "";
             String Param = "";
 
             // Если задан тип var
-            if (RequestUri.Length > 4)
+            if (RequestUri.Length > 4 && RequestUri.Substring(0, 4) == "var=")
             {
-                if (RequestUri.Substring(0, 4) == "var=")
-                {
-                    Param = RequestUri.Substring(4); // Получаем значение параметра var
-                }
+                Param = RequestUri.Substring(4); // Получаем значение параметра var
             }
 
             // Если задан тип info
-            if (RequestUri.Substring(0, 4) == "info")
+            if (RequestUri.Length > 5 && RequestUri.Substring(0, 5) == "info=")
             {
-                if (RequestUri.Length > 5)
-                {
-                    if (RequestUri.Substring(0, 5) == "info=")
-                    {
-                        Param = RequestUri.Substring(5); // Получаем значение параметра info
-                    }
-                }
+                Param = RequestUri.Substring(5); // Получаем значение параметра info
 
                 // Получаем OPC Server
                 OPC info = new OPC("Kepware.KEPServerEX.V6", true, Param);
 
-                // Код простой HTML-странички
+                // Код одной HTML-странички
                 string Html = "<html><body><h1>I'm C#. It works!</h1><h2> ip " + clientIPAddress + "</h2><p>" + info.Out + "</p>Req: " + Request + "<h4>" + RequestUri + "</h4></body></html>";
                 
                 // Необходимые заголовки: ответ сервера, тип и длина содержимого. После двух пустых строк - само содержимое
-                Title = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + Html.Length.ToString() + "\n\n" + Html;
+                Document = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + Html.Length.ToString() + "\n\n" + Html;
 
             }
             else
@@ -115,16 +106,16 @@ namespace ConsoleApp_WebServer1
                 // Получаем OPC Server
                 OPC info = new OPC("Kepware.KEPServerEX.V6", Param);
 
-                // Код простой HTML-странички
+                // Код другой HTML-странички
                 string Html = "<html><body><h1>I'm C#. It works!</h1><h2> ip " + clientIPAddress + "</h2><h3>" + info.Out + "</h3>Req: " + Request + "<h4>" + RequestUri + "</h4></body></html>";
                 
                 // Необходимые заголовки: ответ сервера, тип и длина содержимого. После двух пустых строк - само содержимое
-                Title = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + Html.Length.ToString() + "\n\n" + Html;
+                Document = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + Html.Length.ToString() + "\n\n" + Html;
 
             }
 
             // Приведем строку к виду массива байт
-            byte[] outBuffer = Encoding.ASCII.GetBytes(Title);
+            byte[] outBuffer = Encoding.ASCII.GetBytes(Document);
             
             // Отправим его клиенту
             Client.GetStream().Write(outBuffer, 0, outBuffer.Length);
