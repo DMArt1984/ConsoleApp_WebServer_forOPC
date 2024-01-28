@@ -11,7 +11,7 @@ using TitaniumAS.Opc.Client.Da.Browsing;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace ConsoleApp_WebServer1
+namespace ConsoleApp_WebServerDOC
 {
     // OPC – это набор повсеместно принятых спецификаций, 
     // предоставляющих универсальный механизм обмена данными в системах контроля и управления.

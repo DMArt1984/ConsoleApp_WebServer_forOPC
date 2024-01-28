@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace ConsoleApp_WebServer1
+namespace ConsoleApp_WebServerDOC
 {
     class Server
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 
 
-namespace ConsoleApp_WebServer1
+namespace ConsoleApp_WebServerDOC
 {
     class Program
     {

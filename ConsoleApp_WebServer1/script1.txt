@@ -1,0 +1,40 @@
+﻿function SendData1() {
+    fetch("127.0.0.1:90", {
+            method: "POST",
+            body: JSON.stringify({
+                userId: 1,
+                title: "Fix my bugs",
+                completed: false
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        });
+ };
+
+ function SendData2() {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "127.0.0.1:90/update");
+    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+    const body = JSON.stringify({
+      userId: 1,
+      title: "Fix my bugs",
+      completed: false
+    });
+    xhr.onload = () => {
+      alert("Ready!");
+      if (xhr.readyState == 4 && (xhr.status == 201 || xhr.status == 200)) {
+        console.log(JSON.parse(xhr.responseText));
+      } else {
+        console.log(`Error: ${xhr.status}`);
+      }
+    };
+    xhr.send(body);
+}
+
+setInterval(myMethod, 5000);
+
+function myMethod( )
+{
+  document.getElementById('dyn').innerHTML += '>';
+}

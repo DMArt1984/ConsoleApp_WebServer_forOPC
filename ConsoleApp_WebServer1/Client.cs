@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
-namespace ConsoleApp_WebServer1
+namespace ConsoleApp_WebServerDOC
 {
     class Client
     {
@@ -49,6 +52,15 @@ namespace ConsoleApp_WebServer1
             // также отсекаем все переменные GET-запроса
             Match ReqMatch = Regex.Match(Request, @"^\w+\s+([^\s\?]+)[^\s]*\s+HTTP/.*|");
 
+            // json in body
+            dynamic json = null;
+            Regex regex = new Regex("{(.*)}");
+            var v = regex.Match(Request);
+            if (string.IsNullOrWhiteSpace(v.Groups[1].Value) == false)
+            {
+                json = JsonConvert.DeserializeObject("{"+v.Groups[1].Value+"}");
+            }
+
             // Если запрос не удался
             if (ReqMatch == Match.Empty)
             {
@@ -63,6 +75,8 @@ namespace ConsoleApp_WebServer1
             // Например, "%20" -> " "
             RequestUri = Uri.UnescapeDataString(RequestUri);
 
+            Console.WriteLine($"Строка клиента: {RequestUri}");
+
             // Если в строке содержится двоеточие, передадим ошибку 400
             // Это нужно для защиты от URL типа http://example.com/../../file.txt
             if (RequestUri.IndexOf("..") >= 0)
@@ -73,9 +87,12 @@ namespace ConsoleApp_WebServer1
             if (RequestUri.Length > 1)
             {
                 RequestUri = RequestUri.Remove(0, 1);
+                var x = RequestUri.IndexOf('/');
+                if (x > 0 && x < RequestUri.Length)
+                    RequestUri = RequestUri.Substring(x + 1);
             }
 
-
+            // -------------------------------------------------------------------------------------------------------------
             // Переменные для заголовка и другие
             string Document = "";
             String Param = "";
@@ -101,13 +118,31 @@ namespace ConsoleApp_WebServer1
                 Document = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + Html.Length.ToString() + "\n\n" + Html;
 
             }
+            else if (RequestUri == "update")
+            {
+                string data = "{\"say\" : \"HELLO\"}";
+                
+                // Необходимые заголовки: ответ сервера, тип и длина содержимого. После двух пустых строк - само содержимое
+                Document = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + data.ToString() + "\n\n" + data;
+            }
             else
             {
                 // Получаем OPC Server
                 OPC info = new OPC("Kepware.KEPServerEX.V6", Param);
 
+                // HMI
+                string hmi = "<input value=\"press\" onclick=\"SendData2()\" type=\"button\">";
+
+
+                // script
+                string script = "alert(\"Hello\");";
+                script = File.ReadAllText("script1.txt");
+
+                if (!String.IsNullOrWhiteSpace(script))
+                    script = "<script>" + script + "</script>";
+
                 // Код другой HTML-странички
-                string Html = "<html><body><h1>I'm C#. It works!</h1><h2> ip " + clientIPAddress + "</h2><h3>" + info.Out + "</h3>Req: " + Request + "<h4>" + RequestUri + "</h4></body></html>";
+                string Html = "<html><body><h1>I'm C#. It works!</h1><h2> ip " + clientIPAddress + "</h2><h3>" + info.Out + "</h3>Req: " + Request + "<h4>" + RequestUri + "</h4><div id='dyn'>RUN: </div>" + hmi + script + "</body></html>";
                 
                 // Необходимые заголовки: ответ сервера, тип и длина содержимого. После двух пустых строк - само содержимое
                 Document = "HTTP/1.1 200 OK\nContent-type: text/html\nContent-Length:" + Html.Length.ToString() + "\n\n" + Html;
